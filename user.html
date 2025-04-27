@@ -11,7 +11,7 @@
 
 <body>
 
-    <p>
+    <!-- <p>
 
 
         <label for="username">Username:</label>
@@ -21,9 +21,120 @@
         <input type="password" id="password" placeholder="Placeholder"><br><br>
 
 
-    </p>
+    </p> -->
 
     <a href="index.html">Home Page</a>
+
+    
+
+    <h1>Simple Demo for PUT, GET, and DELETE</h1>
+    <p id="lambda-info">
+        <!-- loaded with AJAX -->
+    </p>
+    
+    <h1>Register New User</h1>
+    
+    <hr>
+    
+    <label for="username">Username:</label>
+    <input type="username" id="username" placeholder="Enter username"><br><br>
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" placeholder="Enter password"><br><br>
+    
+    <button id="send-data">Send Data</button>
+    <p>Sends a new user to the server</p>
+    
+    <script>
+        document.getElementById("send-data").onclick = function () {
+            let username = document.getElementById("username").value.trim();
+            let password = document.getElementById("password").value.trim();
+    
+            let xhr = new XMLHttpRequest();
+            xhr.open("PUT", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users/");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify({
+                username: username,
+                password: password
+            }));
+    
+            // Clear inputs after sending
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+        }
+    </script>
+    
+    <hr>
+    
+    <h1>Load Users</h1>
+    
+    <button id="load-data">Load Data</button>
+    <p>Loads users from the server</p>
+    
+    <script>
+        document.getElementById("load-data").onclick = function () {
+            let lambda = document.getElementById("lambda-info");
+            let xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function () {
+                const data = JSON.parse(xhr.response);
+    
+                let table = "<table border='1' cellpadding='5' cellspacing='0'><thead><tr>";
+    
+                if (data.length > 0) {
+                    for (let key in data[0]) {
+                        table += `<th>${key}</th>`;
+                    }
+                    table += "</tr></thead><tbody>";
+    
+                    for (let item of data) {
+                        table += "<tr>";
+                        for (let key in item) {
+                            table += `<td>${item[key]}</td>`;
+                        }
+                        table += "</tr>";
+                    }
+                    table += "</tbody></table>";
+                }
+    
+                lambda.innerHTML = table;
+            });
+            xhr.open("GET", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users");
+            xhr.send();
+        }
+    </script>
+    
+    <hr>
+    
+    <h1>Delete User</h1>
+    
+    <label for="delete-username">Username to Delete:</label>
+    <input type="text" id="delete-username" placeholder="Enter username to delete"><br><br>
+    
+    <button id="delete-data">Delete Data</button>
+    <p>Deletes a user by username</p>
+    
+    <script>
+        document.getElementById("delete-data").onclick = function () {
+            let deleteUsername = document.getElementById("delete-username").value.trim();
+    
+            if (!deleteUsername) {
+                alert("Please enter a username to delete.");
+                return;
+            }
+    
+            if (!confirm(`Are you sure you want to delete the user "${deleteUsername}"?`)) {
+                return; // User canceled deletion
+            }
+    
+            let xhr = new XMLHttpRequest();
+            xhr.open("DELETE", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users/" + encodeURIComponent(deleteUsername));
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send();
+    
+            // Clear delete input
+            document.getElementById("delete-username").value = "";
+        }
+    </script>
 
 
 </body>
