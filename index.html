@@ -11,71 +11,64 @@
 
 <body>
 
-
-
   <h1>Space Invaders</h1>
-
-
-
 
   <div class="select">
 
-
+<!-- Options for user -->
     <div><a href="new.html">Create Account</a></div>    
-    <br>
+      <br>
     <div><a href="user.html">Load Account</a></div>    
-    <br>
+      <br>
     <div><a href="game.html">Play as Guest</a></div>    
-    <br>
+      <br>
   </div>
-  
-    <br>
-    <br>
-    <br>
+  <br>
+  <br>
+  <br>
 
-
-  <script type="module" src="js/main.js"></script>
-  <br>
-  <br>
-  <br>
+<!-- Leaderboard structure -->
   <table>
-    <caption>
-      Leaderboard
-    </caption>
-    <thead>
-      <tr>
-        <th scope="col">Username</th>
-
-        <th scope="col">Score</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">SpaceInvader5000</th>
-
-        <td>200</td>
-      </tr>
-      <tr>
-        <th scope="row">SpaceInvader4000</th>
-
-        <td>150</td>
-      </tr>
-      <tr>
-        <th scope="row">SpaceInvader3000</th>
-
-        <td>100</td>
-      </tr>
-
-    </tbody>
-    <tfoot>
-      <tr>
-        <th scope="row">*placeholder*</th>
-        <td>**</td>
-      </tr>
-    </tfoot>
-  </table>
+    <caption>Leaderboard</caption>
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+        <tbody id="leaderboard-body">
+        </tbody>
+    </table>
   
-</body>
+<!-- Pull info for the leaderboard and load -->
+  <script>
+    const apiBase = "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com";
 
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch(`${apiBase}/users`);
+        const users = await res.json();
+
+        const sorted = users
+          .filter(u => typeof u.wins === "number")
+          .sort((a, b) => b.wins - a.wins);
+
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "";
+
+        for (const user of sorted) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${user.username}</td><td>${user.wins}</td>`;
+          tbody.appendChild(tr);
+        }
+      } catch (err) {
+        console.error("Error loading leaderboard:", err);
+      }
+    }
+
+    loadLeaderboard();
+  </script>
+
+</body>
 
 </html>

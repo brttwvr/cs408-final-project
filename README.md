@@ -15,3 +15,10 @@ As a stretch goal, I'd like to make this functional on mobile devices as well, p
 TODO: Replace the wireframe below with you own design.
 
 ![wireframe](landing-page.png)
+
+
+
+## Sources used
+
+I based the game on kubowania's build here: https://github.com/kubowania/space-invaders
+I used the following animated space background (I don't think I made any revisions): https://codepen.io/wheresdara/pen/wvXBpwa

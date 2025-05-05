@@ -1,143 +1,146 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Welcome Back!</title>
-  <meta name="description" content="">
+  <meta charset="UTF-8">
+  <title>Login & User Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/style.css">
-</head>
 
+</head>
 <body>
 
-    <!-- <p>
+  <a href="index.html">← Home Page</a>
 
+<!-- Existing user login -->
+  <h2>Login</h2>
 
-        <label for="username">Username:</label>
-        <input type="username" id="username" placeholder="Placeholder"><br><br>
-
-        <label for="password">Password:</label>
-        <input type="password" id="password" placeholder="Placeholder"><br><br>
-
-
-    </p> -->
-
-    <a href="index.html">Home Page</a>
-
-    
-
-    <h1>Simple Demo for PUT, GET, and DELETE</h1>
-    <p id="lambda-info">
-        <!-- loaded with AJAX -->
-    </p>
-    
-    <h1>Register New User</h1>
-    
-    <hr>
-    
+  <form id="loginForm">
     <label for="username">Username:</label>
-    <input type="username" id="username" placeholder="Enter username"><br><br>
-    
+    <input type="text" id="username" required>
+
     <label for="password">Password:</label>
-    <input type="password" id="password" placeholder="Enter password"><br><br>
-    
-    <button id="send-data">Send Data</button>
-    <p>Sends a new user to the server</p>
-    
-    <script>
-        document.getElementById("send-data").onclick = function () {
-            let username = document.getElementById("username").value.trim();
-            let password = document.getElementById("password").value.trim();
-    
-            let xhr = new XMLHttpRequest();
-            xhr.open("PUT", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users/");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send(JSON.stringify({
-                username: username,
-                password: password
-            }));
-    
-            // Clear inputs after sending
-            document.getElementById("username").value = "";
-            document.getElementById("password").value = "";
-        }
-    </script>
-    
-    <hr>
-    
-    <h1>Load Users</h1>
-    
-    <button id="load-data">Load Data</button>
-    <p>Loads users from the server</p>
-    
-    <script>
-        document.getElementById("load-data").onclick = function () {
-            let lambda = document.getElementById("lambda-info");
-            let xhr = new XMLHttpRequest();
-            xhr.addEventListener("load", function () {
-                const data = JSON.parse(xhr.response);
-    
-                let table = "<table border='1' cellpadding='5' cellspacing='0'><thead><tr>";
-    
-                if (data.length > 0) {
-                    for (let key in data[0]) {
-                        table += `<th>${key}</th>`;
-                    }
-                    table += "</tr></thead><tbody>";
-    
-                    for (let item of data) {
-                        table += "<tr>";
-                        for (let key in item) {
-                            table += `<td>${item[key]}</td>`;
-                        }
-                        table += "</tr>";
-                    }
-                    table += "</tbody></table>";
-                }
-    
-                lambda.innerHTML = table;
-            });
-            xhr.open("GET", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users");
-            xhr.send();
-        }
-    </script>
-    
-    <hr>
-    
-    <h1>Delete User</h1>
-    
-    <label for="delete-username">Username to Delete:</label>
-    <input type="text" id="delete-username" placeholder="Enter username to delete"><br><br>
-    
-    <button id="delete-data">Delete Data</button>
-    <p>Deletes a user by username</p>
-    
-    <script>
-        document.getElementById("delete-data").onclick = function () {
-            let deleteUsername = document.getElementById("delete-username").value.trim();
-    
-            if (!deleteUsername) {
-                alert("Please enter a username to delete.");
-                return;
-            }
-    
-            if (!confirm(`Are you sure you want to delete the user "${deleteUsername}"?`)) {
-                return; // User canceled deletion
-            }
-    
-            let xhr = new XMLHttpRequest();
-            xhr.open("DELETE", "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users/" + encodeURIComponent(deleteUsername));
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send();
-    
-            // Clear delete input
-            document.getElementById("delete-username").value = "";
-        }
-    </script>
+    <input type="password" id="password" required>
 
+    <button type="submit">Login</button>
+  </form>
 
+  <p id="message"></p>
+
+<!-- Show logged in user info and allow self-delet  -->
+  <div id="userInfo" style="display: none;">
+    <h3>User Information</h3>
+    <p><strong>Username:</strong> <span id="info-username"></span></p>
+    <p><strong>Wins:</strong> <span id="info-wins"></span></p>
+    <p><strong>Account Created:</strong> <span id="info-created"></span></p>
+    <button id="deleteBtn">Delete Account</button>
+  </div>
+
+<!-- Search for users via varying criteria -->
+  <h2>Search Users</h2>
+  <p>Leave fields blank to retrieve all users</p>
+  <form id="searchForm">
+    <label for="searchUser">Username:</label>
+    <input type="text" id="searchUser">
+    <label for="searchWins">Wins:</label>
+    <input type="number" id="searchWins" min="0">
+    <label for="searchDate">Created (includes):</label>
+    <input type="text" id="searchDate" placeholder="e.g., 2025-05">
+    <button type="submit">Search</button>
+  </form>
+
+<!-- Show search results -->
+  <div id="searchResults" style="display: none;">
+    <h3>Matching Users</h3>
+    <ul id="resultsList"></ul>
+  </div>
+
+  <script>
+    const apiBase = "https://upqugwxjmk.execute-api.us-east-2.amazonaws.com";
+
+// User login
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      try {
+        const res = await fetch(`${apiBase}/users/${username}`);
+        if (!res.ok) {
+          document.getElementById("message").textContent = "User not found.";
+          return;
+        }
+        const data = await res.json();
+        if (data.password === password) {
+          localStorage.setItem("username", username);
+          document.getElementById("message").textContent = "Login successful.";
+
+          document.getElementById("userInfo").style.display = "block";
+          document.getElementById("info-username").textContent = data.username;
+          document.getElementById("info-wins").textContent = data.wins ?? 0;
+          document.getElementById("info-created").textContent = new Date(data.createdAt).toLocaleString();
+        } else {
+          document.getElementById("message").textContent = "Incorrect password.";
+        }
+      } catch (err) {
+        document.getElementById("message").textContent = "Error: " + err.message;
+      }
+    });
+
+// Delete user
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      const username = document.getElementById("username").value;
+      if (!confirm(`Are you sure you want to delete the account "${username}"?`)) return;
+
+      try {
+        const res = await fetch(`${apiBase}/users/${username}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          alert("Account deleted.");
+          localStorage.removeItem("username");
+          window.location.href = "index.html";
+        } else {
+          alert("Failed to delete account.");
+        }
+      } catch (err) {
+        alert("Error deleting account: " + err.message);
+      }
+    });
+
+// Search for user(s)
+    document.getElementById("searchForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const usernameSearch = document.getElementById("searchUser").value.trim().toLowerCase();
+      const winsSearch = document.getElementById("searchWins").value.trim();
+      const dateSearch = document.getElementById("searchDate").value.trim();
+      try {
+        const res = await fetch(`${apiBase}/users`);
+        const users = await res.json();
+
+        const matches = users.filter(user => {
+          const usernameMatch = usernameSearch === "" || user.username?.toLowerCase().includes(usernameSearch);
+          const winsMatch = winsSearch === "" || user.wins == winsSearch;
+          const dateMatch = dateSearch === "" || (user.createdAt && user.createdAt.includes(dateSearch));
+          return usernameMatch && winsMatch && dateMatch;
+        });
+
+        const resultsList = document.getElementById("resultsList");
+        resultsList.innerHTML = "";
+
+        if (matches.length === 0) {
+          resultsList.innerHTML = "No users found";
+        } else {
+          matches.forEach(u => {
+            const item = document.createElement("li");
+            item.textContent = `${u.username} — Wins: ${u.wins ?? 0}, Created: ${u.createdAt ? new Date(u.createdAt).toLocaleString() : "N/A"}`;
+            resultsList.appendChild(item);
+          });
+        }
+
+        document.getElementById("searchResults").style.display = "block";
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    });
+  </script>
 </body>
-
 </html>
 

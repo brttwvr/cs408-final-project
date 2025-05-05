@@ -1,34 +1,107 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Welcome!</title>
-  <meta name="description" content="">
+  <meta charset="UTF-8">
+  <title>Create Account</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/style.css">
+
 </head>
 
 <body>
+  <a href="index.html">Home Page</a>
 
-    <p>
+<!-- User and password stuff -->
+  <h1>Create a New Account</h1>
 
-        <label for="setusername">Set Username:</label>
-        <input type="nsetusername" id="newusername" placeholder="Placeholder"><br><br>
+  <label for="newusername">Set Username:</label>
+  <input type="text" id="newusername" placeholder="Enter username">
 
-        <label for="setassword">Set Password:</label>
-        <input type="setpassword" id="setpassword" placeholder="Placeholder"><br><br>
+  <label for="setpassword">Set Password:</label>
+  <input type="password" id="setpassword" placeholder="Enter password">
 
+  <label for="repeatpassword">Repeat Password:</label>
+  <input type="password" id="repeatpassword" placeholder="Repeat password">
 
-        ** Add data verification **
-        <label for="setassword">Repeat Password:</label>
-        <input type="setpassword" id="setpassword" placeholder="Placeholder"><br><br>
+  <button id="setBtn">Create Account</button>
 
-    </p>
+  <div id="video"></div>
 
-    <a href="index.html">Home Page</a>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const setBtn = document.getElementById("setBtn");
+      const usernameInput = document.getElementById("newusername");
+      const passwordInput = document.getElementById("setpassword");
+      const repeatPasswordInput = document.getElementById("repeatpassword");
+      const video = document.getElementById("video");
+  
+      setBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+  
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const confirm = repeatPasswordInput.value;
+  
+// Clear video 
+        video.innerHTML = "";
+  
+// Check completion
+        if (!username || !password || !confirm) {
+          alert("Must complete all fields");
+          return;
+        }
 
-
+// Passwords don't match
+        if (password !== confirm) {
+          video.innerHTML = `
+            <iframe width="560" height="315"
+              src="https://www.youtube.com/embed/UCh6guovbt0?autoplay=1"
+              title="Mismatch Video"
+              frameborder="0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+            <p style="margin-top: 10px; font-size: 18px; color: red;">
+              Passwords do not match
+            </p>
+          `;
+          return;
+        }
+  
+// Passwords match
+        video.innerHTML = `
+          <iframe width="560" height="315"
+            src="https://www.youtube.com/embed/tSJBx-sI1KI?autoplay=1"
+            title="Match Video"
+            frameborder="0"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+          <p style="margin-top: 10px; font-size: 18px; color: green;">
+            Passwords match!
+          </p>
+        `;
+  
+// Send account info to api and wait for video to play before switching to game page
+        setTimeout(async () => {
+          try {
+            await fetch("https://upqugwxjmk.execute-api.us-east-2.amazonaws.com/users", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password })
+            });
+  
+            localStorage.setItem("username", username);
+            window.location.href = "game.html";
+          } catch (err) {
+            alert("Failed to create account.");
+            console.error(err);
+          }
+        }, 32000); 
+      });
+    });
+  </script>
+  
 </body>
-
 </html>
+
+
